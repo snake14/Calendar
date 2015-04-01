@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import com.ym.web.calendar.database.MyEntityManagerFactory;
 import com.ym.web.calendar.model.Calendar;
@@ -65,20 +66,44 @@ public class CalendarResource {
     }
 
     /**
+     * @param info
      * @param request
      * @return Response
      */
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCalendarList(@Context HttpServletRequest request) {
+    public Response getCalendarList(@Context UriInfo info, @Context HttpServletRequest request) {
 
         ArrayList<Calendar> result = new ArrayList<Calendar>();
         ResponseBuilder builder = Response.status(Status.OK).entity(result).type(MediaType.APPLICATION_JSON_TYPE);
 
+        String start = null;
+        if (info.getQueryParameters().containsKey("start")) {
+            start = info.getQueryParameters().getFirst("start");
+        }
+        String end = null;
+        if (info.getQueryParameters().containsKey("end")) {
+            start = info.getQueryParameters().getFirst("end");
+        }
+
         EntityManager em = MyEntityManagerFactory.createEntityManager();
         try {
-            Query queryMessages = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca");
-            List calendars = queryMessages.getResultList();
+            Query queryCalendars = null;
+            if (start == null && end == null) {
+                queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca");
+            } else if (start != null && end != null) {
+                queryCalendars = em
+                    .createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE startDateTime >= :start AND endDateTime <= :end");
+                queryCalendars.setParameter("start", start);
+                queryCalendars.setParameter("end", end);
+            } else if (start != null) {
+                queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE startDateTime >= :start");
+                queryCalendars.setParameter("start", start);
+            } else {
+                queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE endDateTime <= :end");
+                queryCalendars.setParameter("end", end);
+            }
+            List calendars = queryCalendars.getResultList();
             if (calendars != null && !calendars.isEmpty()) {
                 result.addAll(calendars);
                 builder.entity(result);
