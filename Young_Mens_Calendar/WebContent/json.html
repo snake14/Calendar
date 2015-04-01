@@ -12,6 +12,7 @@
 	$(document).ready(function() {
 		$.ajax({
             type: "GET",
+            data_type: "json",
             url: "Young_Mens_Calendar/web/calendar",
             success: function(data) {
 		    $('#calendar').fullCalendar({
