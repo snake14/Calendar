@@ -134,9 +134,9 @@ public class CalendarResource {
 
         EntityManager em = MyEntityManagerFactory.createEntityManager();
         try {
-            Query queryMessages = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE calendarId = :calendarId");
-            queryMessages.setParameter("calendarId", calendarId);
-            Calendar calendar = (Calendar) queryMessages.getSingleResult();
+            Query queryCalendar = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE calendarId = :calendarId");
+            queryCalendar.setParameter("calendarId", calendarId);
+            Calendar calendar = (Calendar) queryCalendar.getSingleResult();
             if (calendar != null) {
                 builder.entity(calendar);
             }
