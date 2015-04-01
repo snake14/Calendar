@@ -10,26 +10,34 @@
 <script>
 
 	$(document).ready(function() {
-	
-		$('#calendar').fullCalendar({
-			header: {
-				left: 'prev,next today',
-				center: 'title',
-				right: 'month,agendaWeek,agendaDay'
-			},
-			editable: true,
-			eventLimit: true, // allow "more" link when too many events
-			events: {
-				url: 'php/get-events.php',
-				error: function() {
-					$('#script-warning').show();
-				}
-			},
-			loading: function(bool) {
-				$('#loading').toggle(bool);
-			}
-		});
-		
+		$.ajax({
+            type: "GET",
+            url: "Young_Mens_Calendar/web/calendar",
+            success: function(data) {
+		    $('#calendar').fullCalendar({
+			    header: {
+			   	    left: 'prev,next today',
+				    center: 'title',
+				    right: 'month,agendaWeek,agendaDay'
+			    },
+			    editable: true,
+			    eventLimit: true, // allow "more" link when too many events
+			    events: $.map(data.d, function(item, i) {
+                    var event = new Object();
+                    event.id = item.calendarId;
+                    event.start = new Date(item.startDateTime);
+                    event.end = new Date(item.endDateTime);
+                    event.title = item.title;
+                    return event;
+                })
+		    });
+		    $('#loading').hide();
+            $('#calendar').show();
+        
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            debugger;
+        }
 	});
 
 </script>
@@ -70,10 +78,6 @@
 </style>
 </head>
 <body>
-
-	<div id='script-warning'>
-		<code>php/get-events.php</code> must be running.
-	</div>
 
 	<div id='loading'>loading...</div>
 
