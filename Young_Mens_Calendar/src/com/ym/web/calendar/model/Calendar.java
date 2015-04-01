@@ -9,6 +9,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ym.web.calendar.model.ser.DateDeserializer;
@@ -18,117 +21,381 @@ import com.ym.web.calendar.model.ser.DateSerializer;
 @Table(name = "calendar")
 public class Calendar {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "calendar_id")
-	private Integer calendarId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "calendar_id")
+    @JsonProperty("id")
+    private Integer calendarId;
 
-	@Column(name = "title")
-	private String title;
+    @Column(name = "title")
+    private String title;
 
-	@JsonDeserialize(using = DateDeserializer.class)
-	@JsonSerialize(using = DateSerializer.class)
-	@Column(name = "start_date_time")
-	private Date startDateTime;
+    @JsonInclude(Include.NON_NULL)
+    private Boolean allDay;
 
-	@JsonDeserialize(using = DateDeserializer.class)
-	@JsonSerialize(using = DateSerializer.class)
-	@Column(name = "end_date_time")
-	private Date endDateTime;
+    @JsonDeserialize(using = DateDeserializer.class)
+    @JsonSerialize(using = DateSerializer.class)
+    @Column(name = "start_date_time")
+    private Date start;
 
-	@Column(name = "location")
-	private String location;
+    @JsonDeserialize(using = DateDeserializer.class)
+    @JsonSerialize(using = DateSerializer.class)
+    @Column(name = "end_date_time")
+    @JsonInclude(Include.NON_NULL)
+    private Date end;
 
-	@Column(name = "description")
-	private String description;
+    @JsonInclude(Include.NON_NULL)
+    private String url;
 
-	/**
-	 * @return the calendarId
-	 */
-	public Integer getCalendarId() {
-		return calendarId;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private String className;
 
-	/**
-	 * @param calendarId
-	 *            the calendarId to set
-	 */
-	public void setCalendarId(Integer calendarId) {
-		this.calendarId = calendarId;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private Boolean editable;
 
-	/**
-	 * @return the title
-	 */
-	public String getTitle() {
-		return title;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private Boolean startEditable;
 
-	/**
-	 * @param title
-	 *            the title to set
-	 */
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private Boolean durationEditable;
 
-	/**
-	 * @return the startDateTime
-	 */
-	public Date getStartDateTime() {
-		return startDateTime;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private String rendering;
 
-	/**
-	 * @param startDateTime
-	 *            the startDateTime to set
-	 */
-	public void setStartDateTime(Date startDateTime) {
-		this.startDateTime = startDateTime;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private Boolean overlap;
 
-	/**
-	 * @return the endDateTime
-	 */
-	public Date getEndDateTime() {
-		return endDateTime;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private String constraint;
 
-	/**
-	 * @param endDateTime
-	 *            the endDateTime to set
-	 */
-	public void setEndDateTime(Date endDateTime) {
-		this.endDateTime = endDateTime;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private Object source;
 
-	/**
-	 * @return the location
-	 */
-	public String getLocation() {
-		return location;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private String color;
 
-	/**
-	 * @param location
-	 *            the location to set
-	 */
-	public void setLocation(String location) {
-		this.location = location;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private String backgroundColor;
 
-	/**
-	 * @return the description
-	 */
-	public String getDescription() {
-		return description;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private String borderColor;
 
-	/**
-	 * @param description
-	 *            the description to set
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    @JsonInclude(Include.NON_NULL)
+    private String textColor;
+
+    @Column(name = "location")
+    @JsonInclude(Include.NON_NULL)
+    private String location;
+
+    @Column(name = "description")
+    @JsonInclude(Include.NON_NULL)
+    private String description;
+
+    /**
+     * @return the calendarId
+     */
+    public Integer getCalendarId() {
+        return calendarId;
+    }
+
+    /**
+     * @param calendarId the calendarId to set
+     */
+    public void setCalendarId(Integer calendarId) {
+        this.calendarId = calendarId;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * @return Returns the allDay.
+     */
+    public Boolean getAllDay() {
+
+        return allDay;
+    }
+
+    /**
+     * @param allDay The allDay to set.
+     */
+    public void setAllDay(Boolean allDay) {
+
+        this.allDay = allDay;
+    }
+
+    /**
+     * @return the startDateTime
+     */
+    public Date getStart() {
+        return start;
+    }
+
+    /**
+     * @param start the startDateTime to set
+     */
+    public void setStart(Date start) {
+        this.start = start;
+    }
+
+    /**
+     * @return the endDateTime
+     */
+    public Date getEnd() {
+        return end;
+    }
+
+    /**
+     * @param end the endDateTime to set
+     */
+    public void setEnd(Date end) {
+        this.end = end;
+    }
+
+    /**
+     * @return Returns the url.
+     */
+    public String getUrl() {
+
+        return url;
+    }
+
+    /**
+     * @param url The url to set.
+     */
+    public void setUrl(String url) {
+
+        this.url = url;
+    }
+
+    /**
+     * @return Returns the className.
+     */
+    public String getClassName() {
+
+        return className;
+    }
+
+    /**
+     * @param className The className to set.
+     */
+    public void setClassName(String className) {
+
+        this.className = className;
+    }
+
+    /**
+     * @return Returns the editable.
+     */
+    public Boolean getEditable() {
+
+        return editable;
+    }
+
+    /**
+     * @param editable The editable to set.
+     */
+    public void setEditable(Boolean editable) {
+
+        this.editable = editable;
+    }
+
+    /**
+     * @return Returns the startEditable.
+     */
+    public Boolean getStartEditable() {
+
+        return startEditable;
+    }
+
+    /**
+     * @param startEditable The startEditable to set.
+     */
+    public void setStartEditable(Boolean startEditable) {
+
+        this.startEditable = startEditable;
+    }
+
+    /**
+     * @return Returns the durationEditable.
+     */
+    public Boolean getDurationEditable() {
+
+        return durationEditable;
+    }
+
+    /**
+     * @param durationEditable The durationEditable to set.
+     */
+    public void setDurationEditable(Boolean durationEditable) {
+
+        this.durationEditable = durationEditable;
+    }
+
+    /**
+     * @return Returns the rendering.
+     */
+    public String getRendering() {
+
+        return rendering;
+    }
+
+    /**
+     * @param rendering The rendering to set.
+     */
+    public void setRendering(String rendering) {
+
+        this.rendering = rendering;
+    }
+
+    /**
+     * @return Returns the overlap.
+     */
+    public Boolean getOverlap() {
+
+        return overlap;
+    }
+
+    /**
+     * @param overlap The overlap to set.
+     */
+    public void setOverlap(Boolean overlap) {
+
+        this.overlap = overlap;
+    }
+
+    /**
+     * @return Returns the constraint.
+     */
+    public String getConstraint() {
+
+        return constraint;
+    }
+
+    /**
+     * @param constraint The constraint to set.
+     */
+    public void setConstraint(String constraint) {
+
+        this.constraint = constraint;
+    }
+
+    /**
+     * @return Returns the source.
+     */
+    public Object getSource() {
+
+        return source;
+    }
+
+    /**
+     * @param source The source to set.
+     */
+    public void setSource(Object source) {
+
+        this.source = source;
+    }
+
+    /**
+     * @return Returns the color.
+     */
+    public String getColor() {
+
+        return color;
+    }
+
+    /**
+     * @param color The color to set.
+     */
+    public void setColor(String color) {
+
+        this.color = color;
+    }
+
+    /**
+     * @return Returns the backgroundColor.
+     */
+    public String getBackgroundColor() {
+
+        return backgroundColor;
+    }
+
+    /**
+     * @param backgroundColor The backgroundColor to set.
+     */
+    public void setBackgroundColor(String backgroundColor) {
+
+        this.backgroundColor = backgroundColor;
+    }
+
+    /**
+     * @return Returns the borderColor.
+     */
+    public String getBorderColor() {
+
+        return borderColor;
+    }
+
+    /**
+     * @param borderColor The borderColor to set.
+     */
+    public void setBorderColor(String borderColor) {
+
+        this.borderColor = borderColor;
+    }
+
+    /**
+     * @return Returns the textColor.
+     */
+    public String getTextColor() {
+
+        return textColor;
+    }
+
+    /**
+     * @param textColor The textColor to set.
+     */
+    public void setTextColor(String textColor) {
+
+        this.textColor = textColor;
+    }
+
+    /**
+     * @return the location
+     */
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * @param location the location to set
+     */
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }
