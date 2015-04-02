@@ -4,8 +4,13 @@
 <meta charset='utf-8' />
 <link href='./css/fullcalendar.css' rel='stylesheet' />
 <link href='./css/fullcalendar.print.css' rel='stylesheet' media='print' />
+<link href="./css/jquery-ui.css">
+<link rel="stylesheet" href="./css/jquery-ui.min.css">
+<script src='./js/lib/jquery.js'></script>
+<script src='./js/lib/jquery-ui.min.js'></script>
 <script src='./js/lib/moment.min.js'></script>
 <script src='./js/lib/jquery.min.js'></script>
+<script src='./js/lib/jquery-ui.js'></script>
 <script src='./js/fullcalendar.min.js'></script>
 <script>
 
@@ -21,39 +26,38 @@
 			eventLimit: true, // allow "more" link when too many events
 			selectable: true,
 			selectHelper: true,
-			select: function(start, end, allDay) {
-		        var title = prompt('Event Title:');
-		        if (title) {
-		            calendar.fullCalendar('renderEvent',
-		                {
-		                    title: title,
-		                    start: start,
-		                    end: end,
-		                    allDay: allDay
-		                },
-		                true // make the event "stick"
-		            );
-		            $.ajax({
-					     url: '/Young_Mens_Calendar/web/calendar',
-					     data: '{ "title": "' + title + '", ' 
-					         + '"start": "' + start + '", '
-					         + '"end": "' + end + '", '
-					    	 + '"location": "' + "Some location" + '", '
-					    	 + '"description": "' + "Some description" + '", '
-					    	 + '"editable": true }',
-					     type: 'POST',
-					     contentType: "application/json",
-					     dataType: 'text',
-					     success: function(response){
-					    	 $('#calendar').fullCalendar('updateEvent',event);
-					     },
-					     error: function(response) {
-					    	 alert(response.responseText);
-					     }
-					   });
-		        }
-		        calendar.fullCalendar('unselect');
-		    },
+			select: function (startDate, endDate, allDay, jsEvent) {
+	            var title = prompt('Event Title:', event.title, { buttons: { Ok: true, Cancel: false} });
+	            var endString = '"end": "' + endDate + '", ';
+	            if (allDay) {
+	            	allDay = true;
+	            	endString = '';
+	            } else {
+	            	allDay = false;
+	            }
+			    if (title) {
+				$.ajax({
+				     url: '/Young_Mens_Calendar/web/calendar',
+				     data: '{ "title": "' + title + '", ' 
+				         + '"start": "' + startDate + '", '
+				         + endString
+				         + '"allDay": "' + allDay + '", '
+				    	 + '"location": "' + "Some location" + '", '
+				    	 + '"description": "' + "Some description" + '", '
+				    	 + '"editable": true }',
+				     type: 'POST',
+				     contentType: "application/json",
+				     dataType: 'text',
+				     success: function(response){
+				    	 $('#calendar').fullCalendar('refetchEvents');
+				     },
+				     error: function(response) {
+				    	 alert(response.responseText);
+				     }
+				});
+	                } // end of inner if
+	            $('#calendar').fullCalendar('unselect');
+	        },
 			eventSources: [
 			    '/Young_Mens_Calendar/web/calendar'
 			],
@@ -61,25 +65,50 @@
 				$('#loading').toggle(bool);
 			},
 			eventClick: function(event, jsEvent, view) {
-				   var title = prompt('Event Title:', event.title, { buttons: { Ok: true, Cancel: false} });
-				   if (title){
-				   event.title = title;
-				   event.source = null;
-				   event.className = null;
-				   $.ajax({
-				     url: '/Young_Mens_Calendar/web/calendar/update',
-				     data: JSON.stringify(event),
-				     type: 'POST',
-				     contentType: "application/json",
-				     dataType: 'text',
-				     success: function(response){
-				    	 $('#calendar').fullCalendar('updateEvent',event);
-				     },
-				     error: function(response) {
-				    	 alert(response.responseText);
-				     }
-				   });
-				   }
+				//set the values and open the modal
+				$("#eventStart").html('Start: ' + event.start.toString());
+				$("#eventEnd").html('End: ' + event.end.toString());
+		        $("#eventInfo").html(event.description);
+		        $("#eventLink").attr('href', event.url);
+		        $("#eventContent").dialog(
+		            { 
+		            	modal: true,
+		            	title: event.title,
+		            	buttons: [
+		                   {
+		                       text: "Ok",
+		                       click: function() {
+		                           $( this ).dialog( "close" );
+		                       }
+		                                                                            	 
+		                       // Uncommenting the following line would hide the text,
+		                       // resulting in the label being used as a tooltip
+		                       //showText: false
+		                   },
+		                   {
+			                   text: "Delete",
+			                   click: function() {
+			                       $.ajax({
+			                           url: '/Young_Mens_Calendar/web/calendar/' + event.id + '/delete',
+			                           type: 'GET',
+			                           dataType: 'text',
+			                           success: function(response){
+			                               $('#calendar').fullCalendar('refetchEvents');
+			                           },
+			                           error: function(response) {
+			                               revertFunc();
+			                               alert(response.responseText);
+			                           }
+			                       });
+			                       $( this ).dialog( "close" );
+			                   }
+			                                                                            	 
+			                   // Uncommenting the following line would hide the text,
+			                   // resulting in the label being used as a tooltip
+			                   //showText: false
+			               }
+		               ]
+		           });
 				},
 		    eventDrop: function(event, delta, revertFunc) {
 		    	var title = event.title;
@@ -131,8 +160,8 @@
 	#loading {
 		display: none;
 		position: absolute;
-		top: 10px;
-		right: 10px;
+		top: 100px;
+		right: 100px;
 	}
 
 	#calendar {
@@ -148,6 +177,13 @@
 	<div id='loading'>loading...</div>
 
 	<div id='calendar'></div>
+	
+	<div id="eventContent" title="Event Details">
+	<div id="eventStart"></div>
+	<div id="eventEnd"></div>
+    <div id="eventInfo"></div>
+    <p><strong><a id="eventLink" target="_blank">Read More</a></strong></p>
+</div>
 
 </body>
 </html>
