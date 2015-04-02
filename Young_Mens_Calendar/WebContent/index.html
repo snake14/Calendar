@@ -10,6 +10,7 @@
 <script>
 
 	$(document).ready(function() {
+		var zone = "-08:00"
 		var calendar = $('#calendar').fullCalendar({
 			header: {
 				left: 'prev,next today',
@@ -21,8 +22,6 @@
 			selectable: true,
 			selectHelper: true,
 			select: function(start, end, allDay) {
-				var startDate = new Date(start);
-				var endDate = new Date(end);
 		        var title = prompt('Event Title:');
 		        if (title) {
 		            calendar.fullCalendar('renderEvent',
@@ -36,7 +35,12 @@
 		            );
 		            $.ajax({
 					     url: '/Young_Mens_Calendar/web/calendar',
-					     data: '{ "title": "' + title + '", "location": "Some location", "description": "Some description", "end": "' + endDate.toUTCString() + '", "start": "' + startDate.toUTCString() + '", "editable": true }',
+					     data: '{ "title": "' + title + '", ' 
+					         + '"start": "' + start + '", '
+					         + '"end": "' + end + '", '
+					    	 + '"location": "' + "Some location" + '", '
+					    	 + '"description": "' + "Some description" + '", '
+					    	 + '"editable": true }',
 					     type: 'POST',
 					     contentType: "application/json",
 					     dataType: 'text',
@@ -72,12 +76,17 @@
 				    	 $('#calendar').fullCalendar('updateEvent',event);
 				     },
 				     error: function(response) {
-				    	 alert(response);
+				    	 alert(response.responseText);
 				     }
 				   });
 				   }
 				},
 		    eventDrop: function(event, delta, revertFunc) {
+		    	var title = event.title;
+		    	var start = event.start.format();
+		    	var end = (event.end == null) ? start : event.end.format();
+		    	event.source = null;
+				event.className = null;
 
 		    	$.ajax({
 				     url: '/Young_Mens_Calendar/web/calendar/update',
@@ -89,7 +98,8 @@
 				    	 $('#calendar').fullCalendar('updateEvent',event);
 				     },
 				     error: function(response) {
-				    	 alert(response);
+				    	 revertFunc();
+				    	 alert(response.responseText);
 				     }
 				   });
 		    }

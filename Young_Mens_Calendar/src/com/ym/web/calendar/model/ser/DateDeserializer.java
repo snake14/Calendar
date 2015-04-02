@@ -29,25 +29,30 @@ public class DateDeserializer extends JsonDeserializer<Date> {
 	@Override
 	public Date deserialize(JsonParser jp, DeserializationContext arg1) throws IOException, JsonProcessingException {
 		String stringDate = jp.getText();
-
-		SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
-		formatter.setLenient(false);
 		Date parseDate = null;
+
 		try {
-			parseDate = formatter.parse(stringDate);
-		} catch (ParseException e) {
-			formatter = new SimpleDateFormat(SECOND_DATE_FORMAT);
+			Long timeStamp = new Long(stringDate);
+			parseDate = new Date(timeStamp);
+		} catch (NumberFormatException nfe) {
+			SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
+			formatter.setLenient(false);
 			try {
 				parseDate = formatter.parse(stringDate);
-			} catch (ParseException e2) {
-				formatter = new SimpleDateFormat(THIRD_DATE_FORMAT);
+			} catch (ParseException e) {
+				formatter = new SimpleDateFormat(SECOND_DATE_FORMAT);
 				try {
 					parseDate = formatter.parse(stringDate);
-				} catch (ParseException e3) {
-					String message = MessageFormat.format(
-							"Can not construct instance of {0} from string value ''{1}''",
-							new Object[] { Date.class.getName(), stringDate });
-					throw new InvalidFormatException(message, jp.getCurrentLocation(), stringDate, Date.class);
+				} catch (ParseException e2) {
+					formatter = new SimpleDateFormat(THIRD_DATE_FORMAT);
+					try {
+						parseDate = formatter.parse(stringDate);
+					} catch (ParseException e3) {
+						String message = MessageFormat.format(
+								"Can not construct instance of {0} from string value ''{1}''", new Object[] {
+										Date.class.getName(), stringDate });
+						throw new InvalidFormatException(message, jp.getCurrentLocation(), stringDate, Date.class);
+					}
 				}
 			}
 		}
