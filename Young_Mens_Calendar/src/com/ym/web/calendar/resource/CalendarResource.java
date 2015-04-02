@@ -1,6 +1,9 @@
 package com.ym.web.calendar.resource;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -31,190 +34,207 @@ import com.ym.web.calendar.model.Calendar;
 @Path("/calendar")
 public class CalendarResource {
 
-    /**
-     * Method for handling a post calendar
-     * 
-     * @param request
-     * @param calendar
-     * @return Response
-     */
-    @POST
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response postCalendar(@Context HttpServletRequest request, Calendar calendar) {
+	/**
+	 * Method for handling a post calendar
+	 * 
+	 * @param request
+	 * @param calendar
+	 * @return Response
+	 */
+	@POST
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response postCalendar(@Context HttpServletRequest request, Calendar calendar) {
 
-        ResponseBuilder builder = Response.status(Status.OK).entity("Post Successful").type(
-            MediaType.APPLICATION_JSON_TYPE);
+		ResponseBuilder builder = Response.status(Status.OK).entity("Post Successful")
+				.type(MediaType.APPLICATION_JSON_TYPE);
 
-        EntityManager em = MyEntityManagerFactory.createEntityManager();
-        try {
-            EntityTransaction trans = em.getTransaction();
-            trans.begin();
-            em.persist(calendar);
-            trans.commit();
-            em.close();
-        } catch (Throwable th) {
-            builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage()).type(
-                MediaType.APPLICATION_JSON_TYPE);
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
+		EntityManager em = MyEntityManagerFactory.createEntityManager();
+		try {
+			EntityTransaction trans = em.getTransaction();
+			trans.begin();
+			em.persist(calendar);
+			trans.commit();
+			em.close();
+		} catch (Throwable th) {
+			builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage())
+					.type(MediaType.APPLICATION_JSON_TYPE);
+		} finally {
+			if (em != null && em.isOpen()) {
+				em.close();
+			}
+		}
 
-        return builder.build();
-    }
+		return builder.build();
+	}
 
-    /**
-     * @param info
-     * @param request
-     * @return Response
-     */
-    @GET
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCalendarList(@Context UriInfo info, @Context HttpServletRequest request) {
+	/**
+	 * @param info
+	 * @param request
+	 * @return Response
+	 */
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response getCalendarList(@Context UriInfo info, @Context HttpServletRequest request) {
 
-        ArrayList<Calendar> result = new ArrayList<Calendar>();
-        ResponseBuilder builder = Response.status(Status.OK).entity(result).type(MediaType.APPLICATION_JSON_TYPE);
+		ArrayList<Calendar> result = new ArrayList<Calendar>();
+		ResponseBuilder builder = Response.status(Status.OK).entity(result).type(MediaType.APPLICATION_JSON_TYPE);
 
-        String start = null;
-        if (info.getQueryParameters().containsKey("start")) {
-            start = info.getQueryParameters().getFirst("start");
-        }
-        String end = null;
-        if (info.getQueryParameters().containsKey("end")) {
-            start = info.getQueryParameters().getFirst("end");
-        }
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		Date start = null;
+		if (info.getQueryParameters().containsKey("start")) {
+			String tempStart = info.getQueryParameters().getFirst("start");
+			try {
+				start = format.parse(tempStart);
+			} catch (ParseException e) {
+				builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
+						.type(MediaType.APPLICATION_JSON_TYPE);
+				return builder.build();
+			}
+		}
+		Date end = null;
+		if (info.getQueryParameters().containsKey("end")) {
+			String tempEnd = info.getQueryParameters().getFirst("end");
+			try {
+				end = format.parse(tempEnd);
+			} catch (ParseException e) {
+				builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
+						.type(MediaType.APPLICATION_JSON_TYPE);
+				return builder.build();
+			}
+		}
 
-        EntityManager em = MyEntityManagerFactory.createEntityManager();
-        try {
-            Query queryCalendars = null;
-            if (start == null && end == null) {
-                queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca");
-            } else if (start != null && end != null) {
-                queryCalendars = em
-                    .createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE startDateTime >= :start AND endDateTime <= :end");
-                queryCalendars.setParameter("start", start);
-                queryCalendars.setParameter("end", end);
-            } else if (start != null) {
-                queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE startDateTime >= :start");
-                queryCalendars.setParameter("start", start);
-            } else {
-                queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE endDateTime <= :end");
-                queryCalendars.setParameter("end", end);
-            }
-            List calendars = queryCalendars.getResultList();
-            if (calendars != null && !calendars.isEmpty()) {
-                result.addAll(calendars);
-                builder.entity(result);
-            }
-            em.close();
-        } catch (Throwable th) {
-            builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage()).type(
-                MediaType.APPLICATION_JSON_TYPE);
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
+		EntityManager em = MyEntityManagerFactory.createEntityManager();
+		try {
+			Query queryCalendars = null;
+			if (start == null && end == null) {
+				queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca");
+			} else if (start != null && end != null) {
+				queryCalendars = em
+						.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE ca.startDateTime >= :start AND ca.endDateTime <= :end");
+				queryCalendars.setParameter("start", start);
+				queryCalendars.setParameter("end", end);
+			} else if (start != null) {
+				queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE ca.startDateTime >= :start");
+				queryCalendars.setParameter("start", start);
+			} else {
+				queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE ca.endDateTime <= :end");
+				queryCalendars.setParameter("end", end);
+			}
+			List calendars = queryCalendars.getResultList();
+			if (calendars != null && !calendars.isEmpty()) {
+				result.addAll(calendars);
+				builder.entity(result);
+			}
+			em.close();
+		} catch (Throwable th) {
+			builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage())
+					.type(MediaType.APPLICATION_JSON_TYPE);
+		} finally {
+			if (em != null && em.isOpen()) {
+				em.close();
+			}
+		}
 
-        return builder.build();
-    }
+		return builder.build();
+	}
 
-    /**
-     * @param request
-     * @param calendarId
-     * @return Response
-     */
-    @GET
-    @Path("{calendarId : \\d+}")
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response getCalendarById(@Context HttpServletRequest request, @PathParam("calendarId") int calendarId) {
-        ResponseBuilder builder = Response.status(Status.OK).entity(null).type(MediaType.APPLICATION_JSON_TYPE);
+	/**
+	 * @param request
+	 * @param calendarId
+	 * @return Response
+	 */
+	@GET
+	@Path("{calendarId : \\d+}")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response getCalendarById(@Context HttpServletRequest request, @PathParam("calendarId") int calendarId) {
+		ResponseBuilder builder = Response.status(Status.OK).entity(null).type(MediaType.APPLICATION_JSON_TYPE);
 
-        EntityManager em = MyEntityManagerFactory.createEntityManager();
-        try {
-            Query queryCalendar = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE calendarId = :calendarId");
-            queryCalendar.setParameter("calendarId", calendarId);
-            Calendar calendar = (Calendar) queryCalendar.getSingleResult();
-            if (calendar != null) {
-                builder.entity(calendar);
-            }
-            em.close();
-        } catch (Throwable th) {
-            builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage()).type(
-                MediaType.APPLICATION_JSON_TYPE);
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
+		EntityManager em = MyEntityManagerFactory.createEntityManager();
+		try {
+			Query queryCalendar = em
+					.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE ca.calendarId = :calendarId");
+			queryCalendar.setParameter("calendarId", calendarId);
+			Calendar calendar = (Calendar) queryCalendar.getSingleResult();
+			if (calendar != null) {
+				builder.entity(calendar);
+			}
+			em.close();
+		} catch (Throwable th) {
+			builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage())
+					.type(MediaType.APPLICATION_JSON_TYPE);
+		} finally {
+			if (em != null && em.isOpen()) {
+				em.close();
+			}
+		}
 
-        return builder.build();
-    }
+		return builder.build();
+	}
 
-    /**
-     * @param request
-     * @param calendarId
-     * @return Response
-     */
-    @GET
-    @Path("{calendarId : \\d+}/delete")
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response deleteCalendarById(@Context HttpServletRequest request, @PathParam("calendarId") int calendarId) {
-        ResponseBuilder builder = Response.status(Status.OK).entity("Delete Successful").type(
-            MediaType.APPLICATION_JSON_TYPE);
+	/**
+	 * @param request
+	 * @param calendarId
+	 * @return Response
+	 */
+	@GET
+	@Path("{calendarId : \\d+}/delete")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response deleteCalendarById(@Context HttpServletRequest request, @PathParam("calendarId") int calendarId) {
+		ResponseBuilder builder = Response.status(Status.OK).entity("Delete Successful")
+				.type(MediaType.APPLICATION_JSON_TYPE);
 
-        EntityManager em = MyEntityManagerFactory.createEntityManager();
-        try {
-            EntityTransaction trans = em.getTransaction();
-            trans.begin();
-            Query queryDeleteCalendar = em.createQuery("DELETE FROM Calendar ca WHERE calendarId = :calendarId");
-            queryDeleteCalendar.setParameter("calendarId", calendarId);
-            queryDeleteCalendar.executeUpdate();
-            trans.commit();
-            em.close();
-        } catch (Throwable th) {
-            builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage()).type(
-                MediaType.APPLICATION_JSON_TYPE);
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
+		EntityManager em = MyEntityManagerFactory.createEntityManager();
+		try {
+			EntityTransaction trans = em.getTransaction();
+			trans.begin();
+			Query queryDeleteCalendar = em.createQuery("DELETE FROM Calendar ca WHERE ca.calendarId = :calendarId");
+			queryDeleteCalendar.setParameter("calendarId", calendarId);
+			queryDeleteCalendar.executeUpdate();
+			trans.commit();
+			em.close();
+		} catch (Throwable th) {
+			builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage())
+					.type(MediaType.APPLICATION_JSON_TYPE);
+		} finally {
+			if (em != null && em.isOpen()) {
+				em.close();
+			}
+		}
 
-        return builder.build();
-    }
+		return builder.build();
+	}
 
-    /**
-     * @param request
-     * @param calendar
-     * @return Response
-     */
-    @POST
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response updateCalendar(@Context HttpServletRequest request, Calendar calendar) {
+	/**
+	 * @param request
+	 * @param calendar
+	 * @return Response
+	 */
+	@POST
+	@Path("{calendarId : \\d+}/update")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response updateCalendar(@Context HttpServletRequest request, Calendar calendar) {
 
-        ResponseBuilder builder = Response.status(Status.OK).entity("Update Successful").type(
-            MediaType.APPLICATION_JSON_TYPE);
+		ResponseBuilder builder = Response.status(Status.OK).entity("Update Successful")
+				.type(MediaType.APPLICATION_JSON_TYPE);
 
-        EntityManager em = MyEntityManagerFactory.createEntityManager();
-        try {
-            EntityTransaction trans = em.getTransaction();
-            trans.begin();
-            em.merge(calendar);
-            trans.commit();
-            em.close();
-        } catch (Throwable th) {
-            builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage()).type(
-                MediaType.APPLICATION_JSON_TYPE);
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
+		EntityManager em = MyEntityManagerFactory.createEntityManager();
+		try {
+			EntityTransaction trans = em.getTransaction();
+			trans.begin();
+			em.merge(calendar);
+			trans.commit();
+			em.close();
+		} catch (Throwable th) {
+			builder = Response.status(Status.INTERNAL_SERVER_ERROR).entity(th.getMessage())
+					.type(MediaType.APPLICATION_JSON_TYPE);
+		} finally {
+			if (em != null && em.isOpen()) {
+				em.close();
+			}
+		}
 
-        return builder.build();
-    }
+		return builder.build();
+	}
 }
