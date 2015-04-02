@@ -10,7 +10,7 @@
 <script>
 
 	$(document).ready(function() {
-		$('#calendar').fullCalendar({
+		var calendar = $('#calendar').fullCalendar({
 			header: {
 				left: 'prev,next today',
 				center: 'title',
@@ -18,12 +18,81 @@
 			},
 			editable: true,
 			eventLimit: true, // allow "more" link when too many events
+			selectable: true,
+			selectHelper: true,
+			select: function(start, end, allDay) {
+				var startDate = new Date(start);
+				var endDate = new Date(end);
+		        var title = prompt('Event Title:');
+		        if (title) {
+		            calendar.fullCalendar('renderEvent',
+		                {
+		                    title: title,
+		                    start: start,
+		                    end: end,
+		                    allDay: allDay
+		                },
+		                true // make the event "stick"
+		            );
+		            $.ajax({
+					     url: '/Young_Mens_Calendar/web/calendar',
+					     data: '{ "title": "' + title + '", "location": "Some location", "description": "Some description", "end": "' + endDate.toUTCString() + '", "start": "' + startDate.toUTCString() + '", "editable": true }',
+					     type: 'POST',
+					     contentType: "application/json",
+					     dataType: 'text',
+					     success: function(response){
+					    	 $('#calendar').fullCalendar('updateEvent',event);
+					     },
+					     error: function(response) {
+					    	 alert(response.responseText);
+					     }
+					   });
+		        }
+		        calendar.fullCalendar('unselect');
+		    },
 			eventSources: [
 			    '/Young_Mens_Calendar/web/calendar'
 			],
 			loading: function(bool) {
 				$('#loading').toggle(bool);
-			}
+			},
+			eventClick: function(event, jsEvent, view) {
+				   var title = prompt('Event Title:', event.title, { buttons: { Ok: true, Cancel: false} });
+				   if (title){
+				   event.title = title;
+				   event.source = null;
+				   event.className = null;
+				   $.ajax({
+				     url: '/Young_Mens_Calendar/web/calendar/update',
+				     data: JSON.stringify(event),
+				     type: 'POST',
+				     contentType: "application/json",
+				     dataType: 'text',
+				     success: function(response){
+				    	 $('#calendar').fullCalendar('updateEvent',event);
+				     },
+				     error: function(response) {
+				    	 alert(response);
+				     }
+				   });
+				   }
+				},
+		    eventDrop: function(event, delta, revertFunc) {
+
+		    	$.ajax({
+				     url: '/Young_Mens_Calendar/web/calendar/update',
+				     data: JSON.stringify(event),
+				     type: 'POST',
+				     contentType: "application/json",
+				     dataType: 'text',
+				     success: function(response){
+				    	 $('#calendar').fullCalendar('updateEvent',event);
+				     },
+				     error: function(response) {
+				    	 alert(response);
+				     }
+				   });
+		    }
 		});
 	});
 

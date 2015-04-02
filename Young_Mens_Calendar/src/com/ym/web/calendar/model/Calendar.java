@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,6 +20,7 @@ import com.ym.web.calendar.model.ser.DateSerializer;
 
 @Entity
 @Table(name = "calendar")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Calendar {
 
 	@Id
