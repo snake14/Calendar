@@ -4,8 +4,10 @@
 <meta charset='utf-8' />
 <link href='./css/fullcalendar.css' rel='stylesheet' />
 <link href='./css/fullcalendar.print.css' rel='stylesheet' media='print' />
-<link href="./css/jquery-ui.css">
-<link rel="stylesheet" href="./css/jquery-ui.min.css">
+<link href='./css/jquery-ui.css'>
+<link rel='stylesheet' href='./css/jquery-ui.min.css'>
+<link rel='stylesheet' type='text/css' href='./css/jquery.datetimepicker.css' />
+<script src='./js/jquery.datetimepicker.js'></script>
 <script src='./js/lib/jquery.js'></script>
 <script src='./js/lib/jquery-ui.min.js'></script>
 <script src='./js/lib/moment.min.js'></script>
@@ -66,8 +68,15 @@
 			},
 			eventClick: function(event, jsEvent, view) {
 				//set the values and open the modal
-				$("#eventStart").html('Start: ' + event.start.toString());
-				$("#eventEnd").html('End: ' + event.end.toString());
+				var date = new Date(event.start);
+				var formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+				$("#startDate").datepicker().datepicker('setDate', formatDate);
+				if (event.end) {
+					date = new Date(event.end);
+					formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+					//$("#endDate").datetimepicker({ value: formatDate });
+					//.datetimepicker()
+				}
 		        $("#eventInfo").html(event.description);
 		        $("#eventLink").attr('href', event.url);
 		        $("#eventContent").dialog(
@@ -80,10 +89,6 @@
 		                       click: function() {
 		                           $( this ).dialog( "close" );
 		                       }
-		                                                                            	 
-		                       // Uncommenting the following line would hide the text,
-		                       // resulting in the label being used as a tooltip
-		                       //showText: false
 		                   },
 		                   {
 			                   text: "Delete",
@@ -102,10 +107,12 @@
 			                       });
 			                       $( this ).dialog( "close" );
 			                   }
-			                                                                            	 
-			                   // Uncommenting the following line would hide the text,
-			                   // resulting in the label being used as a tooltip
-			                   //showText: false
+			               },
+			               {
+			                   text: "Cancel",
+			                   click: function() {
+		                           $( this ).dialog( "close" );
+		                       }
 			               }
 		               ]
 		           });
@@ -179,8 +186,14 @@
 	<div id='calendar'></div>
 	
 	<div id="eventContent" title="Event Details">
-	<div id="eventStart"></div>
-	<div id="eventEnd"></div>
+	<div id="eventStart" >
+	    Start Date:
+	    <input type="text" name="start_date" id="startDate"/>
+	</div>
+	<div id="eventEnd" >
+	    End Date:
+	    <input id="endDate" type="text"/>
+	</div>
     <div id="eventInfo"></div>
     <p><strong><a id="eventLink" target="_blank">Read More</a></strong></p>
 </div>
