@@ -111,7 +111,7 @@ public class CalendarResource {
 				queryCalendars = em.createQuery("SELECT OBJECT(ca) FROM Calendar ca");
 			} else if (start != null && end != null) {
 				queryCalendars = em
-						.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE ca.startDateTime >= :start AND ca.endDateTime <= :end");
+						.createQuery("SELECT OBJECT(ca) FROM Calendar ca WHERE ca.startDateTime >= :start AND (ca.endDateTime <= :end OR ca.endDateTime is null)");
 				queryCalendars.setParameter("start", start);
 				queryCalendars.setParameter("end", end);
 			} else if (start != null) {
