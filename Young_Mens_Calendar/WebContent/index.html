@@ -6,17 +6,19 @@
 <link href='./css/fullcalendar.print.css' rel='stylesheet' media='print' />
 <link href='./css/jquery-ui.css'>
 <link rel='stylesheet' href='./css/jquery-ui.min.css'>
-<link rel='stylesheet' type='text/css' href='./css/jquery.datetimepicker.css' />
-<script src='./js/jquery.datetimepicker.js'></script>
+<link rel="stylesheet" type="text/css" href="./css/DateTimePicker.css" />
 <script src='./js/lib/jquery.js'></script>
 <script src='./js/lib/jquery-ui.min.js'></script>
 <script src='./js/lib/moment.min.js'></script>
 <script src='./js/lib/jquery.min.js'></script>
 <script src='./js/lib/jquery-ui.js'></script>
 <script src='./js/fullcalendar.min.js'></script>
+<script type="text/javascript" src="./js/DateTimePicker.js"></script>
 <script>
 
 	$(document).ready(function() {
+		
+		$("#dtBox").DateTimePicker();
 		var zone = "-08:00"
 		var calendar = $('#calendar').fullCalendar({
 			header: {
@@ -68,21 +70,26 @@
 			},
 			eventClick: function(event, jsEvent, view) {
 				//set the values and open the modal
+				$("#titleText").val(event.title);
 				var date = new Date(event.start);
 				var formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
-				$("#startDate").datepicker().datepicker('setDate', formatDate);
+				if (event.allDay) {
+					$("#startDate").show();
+					$("#startDateTime").hide();
+				} else {
+					$("#startDate").hide();
+					$("#startDateTime").show();
+				}
+				//$("#startDate").datepicker().datepicker('setDate', formatDate);
 				if (event.end) {
 					date = new Date(event.end);
 					formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
-					//$("#endDate").datetimepicker({ value: formatDate });
-					//.datetimepicker()
 				}
 		        $("#eventInfo").html(event.description);
 		        $("#eventLink").attr('href', event.url);
 		        $("#eventContent").dialog(
 		            { 
 		            	modal: true,
-		            	title: event.title,
 		            	buttons: [
 		                   {
 		                       text: "Ok",
@@ -186,13 +193,24 @@
 	<div id='calendar'></div>
 	
 	<div id="eventContent" title="Event Details">
-	<div id="eventStart" >
+	<div>
+	Title:
+	<input id="titleText" type="text" >
+	</div>
+	All Day:
+	<input id="allDayCheck" type="checkbox" >
+	<div id="startDate" >
 	    Start Date:
-	    <input type="text" name="start_date" id="startDate"/>
+	    <input type="text" data-field="date" readonly>
+	</div>
+	<div id="startDateTime" >
+	    Start Date:
+	    <input type="text" data-field="datetime" readonly>
 	</div>
 	<div id="eventEnd" >
 	    End Date:
-	    <input id="endDate" type="text"/>
+	    <input type="text" data-field="datetime" readonly>
+	    <div id="dtBox"></div>
 	</div>
     <div id="eventInfo"></div>
     <p><strong><a id="eventLink" target="_blank">Read More</a></strong></p>
