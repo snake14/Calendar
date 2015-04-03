@@ -4,8 +4,8 @@
 <meta charset='utf-8' />
 <link href='./css/fullcalendar.css' rel='stylesheet' />
 <link href='./css/fullcalendar.print.css' rel='stylesheet' media='print' />
-<link href='./css/jquery-ui.css'>
 <link rel='stylesheet' href='./css/jquery-ui.min.css'>
+<link rel="stylesheet" href='./css/jquery-ui.css'>
 <link rel="stylesheet" type="text/css" href="./css/DateTimePicker.css" />
 <script src='./js/lib/jquery.js'></script>
 <script src='./js/lib/jquery-ui.min.js'></script>
@@ -31,36 +31,7 @@
 			selectable: true,
 			selectHelper: true,
 			select: function (startDate, endDate, allDay, jsEvent) {
-	            var title = prompt('Event Title:', event.title, { buttons: { Ok: true, Cancel: false} });
-	            var endString = '"end": "' + endDate + '", ';
-	            if (allDay) {
-	            	allDay = true;
-	            	endString = '';
-	            } else {
-	            	allDay = false;
-	            }
-			    if (title) {
-				$.ajax({
-				     url: '/Young_Mens_Calendar/web/calendar',
-				     data: '{ "title": "' + title + '", ' 
-				         + '"start": "' + startDate + '", '
-				         + endString
-				         + '"allDay": "' + allDay + '", '
-				    	 + '"location": "' + "Some location" + '", '
-				    	 + '"description": "' + "Some description" + '", '
-				    	 + '"editable": true }',
-				     type: 'POST',
-				     contentType: "application/json",
-				     dataType: 'text',
-				     success: function(response){
-				    	 $('#calendar').fullCalendar('refetchEvents');
-				     },
-				     error: function(response) {
-				    	 alert(response.responseText);
-				     }
-				});
-	                } // end of inner if
-	            $('#calendar').fullCalendar('unselect');
+				newEvent(startDate, endDate, allDay);
 	        },
 			eventSources: [
 			    '/Young_Mens_Calendar/web/calendar'
@@ -69,61 +40,8 @@
 				$('#loading').toggle(bool);
 			},
 			eventClick: function(event, jsEvent, view) {
-				//set the values and open the modal
-				$("#titleText").val(event.title);
-				var date = new Date(event.start);
-				var formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
-				if (event.allDay) {
-					$("#startDate").show();
-					$("#startDateTime").hide();
-				} else {
-					$("#startDate").hide();
-					$("#startDateTime").show();
-				}
-				//$("#startDate").datepicker().datepicker('setDate', formatDate);
-				if (event.end) {
-					date = new Date(event.end);
-					formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
-				}
-		        $("#eventInfo").html(event.description);
-		        $("#eventLink").attr('href', event.url);
-		        $("#eventContent").dialog(
-		            { 
-		            	modal: true,
-		            	buttons: [
-		                   {
-		                       text: "Ok",
-		                       click: function() {
-		                           $( this ).dialog( "close" );
-		                       }
-		                   },
-		                   {
-			                   text: "Delete",
-			                   click: function() {
-			                       $.ajax({
-			                           url: '/Young_Mens_Calendar/web/calendar/' + event.id + '/delete',
-			                           type: 'GET',
-			                           dataType: 'text',
-			                           success: function(response){
-			                               $('#calendar').fullCalendar('refetchEvents');
-			                           },
-			                           error: function(response) {
-			                               revertFunc();
-			                               alert(response.responseText);
-			                           }
-			                       });
-			                       $( this ).dialog( "close" );
-			                   }
-			               },
-			               {
-			                   text: "Cancel",
-			                   click: function() {
-		                           $( this ).dialog( "close" );
-		                       }
-			               }
-		               ]
-		           });
-				},
+				editEvent(event);
+			},
 		    eventDrop: function(event, delta, revertFunc) {
 		    	var title = event.title;
 		    	var start = event.start.format();
@@ -162,6 +80,126 @@
 				$("#eventEnd").show();
 			}
 	}
+	
+	function newEvent (startDate, endDate, allDay) {
+		//set the values and open the modal
+		var date = new Date(startDate);
+		var formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+		if (event.allDay) {
+			$("#startDate").show();
+			$("#startDateTime").hide();
+		} else {
+			$("#startDate").hide();
+			$("#startDateTime").show();
+		}
+		//$("#startDate").datepicker().datepicker('setDate', formatDate);
+		if (endDate) {
+			date = new Date(event.end);
+			formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+		}
+        $("#eventContent").dialog(
+            { 
+            	modal: true,
+            	dialogClass: 'alert',
+            	buttons: [
+                   {
+                       text: "Ok",
+                       click: function() {
+                    	   var title = $("#titleText").value;
+                    	   postEvent(title, startDate, endDate, allDay);
+               	           $('#calendar').fullCalendar('unselect');
+                           $( this ).dialog( "close" );
+                       }
+                   },
+	               {
+	                   text: "Cancel",
+	                   click: function() {
+                           $( this ).dialog( "close" );
+                       }
+	               }
+               ]
+           });
+	}
+	
+	function editEvent (event) {
+		//set the values and open the modal
+		$("#titleText").val(event.title);
+		var date = new Date(event.start);
+		var formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+		if (event.allDay) {
+			$("#startDate").show();
+			$("#startDateTime").hide();
+		} else {
+			$("#startDate").hide();
+			$("#startDateTime").show();
+		}
+		//$("#startDate").datepicker().datepicker('setDate', formatDate);
+		if (event.end) {
+			date = new Date(event.end);
+			formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+		}
+		$("#descriptionText").val(event.description);
+        $("#eventContent").dialog(
+            { 
+            	modal: true,
+            	buttons: [
+                   {
+                       text: "Ok",
+                       click: function() {
+                           $( this ).dialog( "close" );
+                       }
+                   },
+                   {
+	                   text: "Delete",
+	                   click: function() {
+	                       $.ajax({
+	                           url: '/Young_Mens_Calendar/web/calendar/' + event.id + '/delete',
+	                           type: 'GET',
+	                           dataType: 'text',
+	                           success: function(response){
+	                               $('#calendar').fullCalendar('refetchEvents');
+	                           },
+	                           error: function(response) {
+	                               revertFunc();
+	                               alert(response.responseText);
+	                           }
+	                       });
+	                       $( this ).dialog( "close" );
+	                   }
+	               },
+	               {
+	                   text: "Cancel",
+	                   click: function() {
+                           $( this ).dialog( "close" );
+                       }
+	               }
+               ]
+           });
+	}
+	
+	function postEvent (title, startDate, endDate, allDay) {
+		if (title) {
+			$.ajax({
+				url: '/Young_Mens_Calendar/web/calendar',
+				data: '{ "title": "' + title + '", ' 
+				    + '"start": "' + startDate + '", '
+				    + '"end": "' + endDate + '", '
+				    + '"allDay": "' + allDay + '", '
+				    + '"location": "' + "Some location" + '", '
+				    + '"description": "' + "Some description" + '", '
+				    + '"editable": true }',
+				type: 'POST',
+				contentType: "application/json",
+				dataType: 'text',
+				success: function(response){
+				    $('#calendar').fullCalendar('refetchEvents');
+				},
+				error: function(response) {
+					alert(response.responseText);
+				}
+			});
+	    }
+	}
 
 </script>
 <style>
@@ -197,6 +235,7 @@
 		margin: 40px auto;
 		padding: 0 10px;
 	}
+}
 
 </style>
 </head>
@@ -226,7 +265,10 @@
 	    <input type="text" data-field="datetime" readonly>
 	</div>
 	<div id="dtBox"></div>
-    <div id="eventInfo"></div>
+    <div id="eventInfo">
+        Description:
+        <input id="descriptionText" type="text" >
+    </div>
 </div>
 
 </body>
