@@ -148,6 +148,20 @@
 		    }
 		});
 	});
+	
+	function showMe () {
+
+	    var chbox = document.getElementById("allDayCheck");
+	        if(chbox.checked){
+	        	$("#startDate").show();
+				$("#startDateTime").hide();
+				$("#eventEnd").hide();
+			} else {
+				$("#startDate").hide();
+				$("#startDateTime").show();
+				$("#eventEnd").show();
+			}
+	}
 
 </script>
 <style>
@@ -198,7 +212,7 @@
 	<input id="titleText" type="text" >
 	</div>
 	All Day:
-	<input id="allDayCheck" type="checkbox" >
+	<input id="allDayCheck" type="checkbox" onclick="showMe()" >
 	<div id="startDate" >
 	    Start Date:
 	    <input type="text" data-field="date" readonly>
@@ -210,10 +224,9 @@
 	<div id="eventEnd" >
 	    End Date:
 	    <input type="text" data-field="datetime" readonly>
-	    <div id="dtBox"></div>
 	</div>
+	<div id="dtBox"></div>
     <div id="eventInfo"></div>
-    <p><strong><a id="eventLink" target="_blank">Read More</a></strong></p>
 </div>
 
 </body>
