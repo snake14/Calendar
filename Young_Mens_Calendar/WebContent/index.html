@@ -73,25 +73,40 @@
 	        if(chbox.checked){
 	        	$("#startDate").show();
 				$("#startDateTime").hide();
-				$("#eventEnd").hide();
+				$("#endDate").show();
+				$("#endDateTime").hide();
 			} else {
 				$("#startDate").hide();
 				$("#startDateTime").show();
-				$("#eventEnd").show();
+				$("#endDate").hide();
+				$("#endDateTime").show();
 			}
 	}
 	
 	function newEvent (startDate, endDate, allDay) {
 		//set the values and open the modal
+		$("#titleText").val('');
+		$("#descriptionText").val('');
 		var date = new Date(startDate);
-		var formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
-		if (event.allDay) {
+		var formatDate = (date.getMonth() + 1) + '-' + (date.getDate() + 1) + '-' + date.getFullYear();
+		var formatTime = date.getHours() + ':' + date.getMinutes();
+		$("#startDateInput").val(formatDate);
+		$("#startDateTimeInput").val(formatDate + ' ' + formatTime);
+		if (allDay) {
 			$("#startDate").show();
 			$("#startDateTime").hide();
+			$("#endDate").show();
+			$("#endDateTime").hide();
+			allDay = true;
+			endDate = '';
 		} else {
 			$("#startDate").hide();
 			$("#startDateTime").show();
+			$("#endDate").hide();
+			$("#endDateTime").show();
+			allDay = false;
 		}
+		$("#allDayCheck").prop("checked", allDay);
 		//$("#startDate").datepicker().datepicker('setDate', formatDate);
 		if (endDate) {
 			date = new Date(event.end);
@@ -105,8 +120,12 @@
                    {
                        text: "Ok",
                        click: function() {
-                    	   var title = $("#titleText").value;
-                    	   postEvent(title, startDate, endDate, allDay);
+                    	   
+                    	   var date = new Date(document.getElementById("startDateInput").value);
+                   		   var formatDate = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + 'T00:00:00.000Z';
+                    	   
+                    	   var title = document.getElementById("titleText").value;
+                    	   postEvent(title, formatDate, endDate, allDay);
                	           $('#calendar').fullCalendar('unselect');
                            $( this ).dialog( "close" );
                        }
@@ -125,18 +144,29 @@
 		//set the values and open the modal
 		$("#titleText").val(event.title);
 		var date = new Date(event.start);
-		var formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+		var formatDate = (date.getMonth() + 1) + '-' + (date.getDate() + 1) + '-' + date.getFullYear();
+		var formatTime = date.getHours() + ':' + date.getMinutes();
 		if (event.allDay) {
+			$("#startDateInput").val(formatDate);
 			$("#startDate").show();
 			$("#startDateTime").hide();
+			$("#endDate").show();
+			$("#endDateTime").hide();
+			allDay = true;
+			endDate = '';
 		} else {
+			$("#startDateTimeInput").val(formatDate + ' ' + formatTime);
 			$("#startDate").hide();
 			$("#startDateTime").show();
+			$("#endDate").hide();
+			$("#endDateTime").show();
+			allDay = false;
 		}
+		$("#allDayCheck").prop("checked", allDay);
 		//$("#startDate").datepicker().datepicker('setDate', formatDate);
 		if (event.end) {
 			date = new Date(event.end);
-			formatDate = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
+			formatDate = date.getMonth() + 1 + '-' + date.getDate() + '-' + date.getFullYear();
 		}
 		$("#descriptionText").val(event.description);
         $("#eventContent").dialog(
@@ -178,16 +208,22 @@
 	}
 	
 	function postEvent (title, startDate, endDate, allDay) {
+		var endString = '';
+		if (endDate) {
+			endString = '"end": "' + endDate + '", ';
+		}
+		var dataString = '{ "title": "' + title + '", ' 
+	    + '"start": "' + startDate + '", '
+	    + endString
+	    + '"allDay": "' + allDay + '", '
+	    + '"location": "' + "Some location" + '", '
+	    + '"description": "' + "Some description" + '", '
+	    + '"editable": true }';
+		alert("In post event: " + dataString);
 		if (title) {
 			$.ajax({
 				url: '/Young_Mens_Calendar/web/calendar',
-				data: '{ "title": "' + title + '", ' 
-				    + '"start": "' + startDate + '", '
-				    + '"end": "' + endDate + '", '
-				    + '"allDay": "' + allDay + '", '
-				    + '"location": "' + "Some location" + '", '
-				    + '"description": "' + "Some description" + '", '
-				    + '"editable": true }',
+				data: dataString,
 				type: 'POST',
 				contentType: "application/json",
 				dataType: 'text',
@@ -254,15 +290,19 @@
 	<input id="allDayCheck" type="checkbox" onclick="showMe()" >
 	<div id="startDate" >
 	    Start Date:
-	    <input type="text" data-field="date" readonly>
+	    <input id="startDateInput" type="text" data-field="date" data-format="MM-dd-yyyy" readonly>
 	</div>
 	<div id="startDateTime" >
 	    Start Date:
-	    <input type="text" data-field="datetime" readonly>
+	    <input id="startDateTimeInput" type="text" data-field="datetime" data-format="MM-dd-yyyy HH:mm:ss" readonly>
 	</div>
-	<div id="eventEnd" >
+	<div id="endDate" >
 	    End Date:
-	    <input type="text" data-field="datetime" readonly>
+	    <input id="endDateInput" type="text" data-field="date" data-format="MM-dd-yyyy" readonly>
+	</div>
+	<div id="endDateTime" >
+	    End Date:
+	    <input id="endDateTimeInput" type="text" data-field="datetime" data-format="MM-dd-yyyy HH:mm:ss" readonly>
 	</div>
 	<div id="dtBox"></div>
     <div id="eventInfo">
