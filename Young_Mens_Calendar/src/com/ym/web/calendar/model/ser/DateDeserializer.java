@@ -26,6 +26,10 @@ public class DateDeserializer extends JsonDeserializer<Date> {
 
 	public static final String THIRD_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss Z";
 
+	public static final String FOURTH_DATE_FORMAT = "M-d-yyyy H:m";
+
+	public static final String FIFTH_DATE_FORMAT = "M-d-yyyy";
+
 	@Override
 	public Date deserialize(JsonParser jp, DeserializationContext arg1) throws IOException, JsonProcessingException {
 		String stringDate = jp.getText();
@@ -48,10 +52,21 @@ public class DateDeserializer extends JsonDeserializer<Date> {
 					try {
 						parseDate = formatter.parse(stringDate);
 					} catch (ParseException e3) {
-						String message = MessageFormat.format(
-								"Can not construct instance of {0} from string value ''{1}''", new Object[] {
-										Date.class.getName(), stringDate });
-						throw new InvalidFormatException(message, jp.getCurrentLocation(), stringDate, Date.class);
+						formatter = new SimpleDateFormat(FOURTH_DATE_FORMAT);
+						try {
+							parseDate = formatter.parse(stringDate);
+						} catch (ParseException e4) {
+							formatter = new SimpleDateFormat(FIFTH_DATE_FORMAT);
+							try {
+								parseDate = formatter.parse(stringDate);
+							} catch (ParseException e5) {
+								String message = MessageFormat.format(
+										"Can not construct instance of {0} from string value ''{1}''", new Object[] {
+												Date.class.getName(), stringDate });
+								throw new InvalidFormatException(message, jp.getCurrentLocation(), stringDate,
+										Date.class);
+							}
+						}
 					}
 				}
 			}
