@@ -146,7 +146,6 @@
                    			//    endDate = '';
                    			// }
                    		   }
-                    	   alert(checkedValue);
                     	   
                     	   var title = document.getElementById("titleText").value;
                     	   var description = document.getElementById("descriptionText").value;
@@ -169,7 +168,6 @@
 		//set the values and open the modal
 		$("#titleText").val(event.title);
 		var date = new Date(event.start);
-		alert(event.start)
 		if (event.allDay) {
 			var formatDate = (date.getMonth() + 1) + '-' + (date.getDate() + 1) + '-' + date.getFullYear();
 			$("#startDateInput").val(formatDate);
