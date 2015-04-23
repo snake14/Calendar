@@ -27,6 +27,7 @@
 				right: 'month,agendaWeek,agendaDay'
 			},
 			editable: true,
+			timezone: "local",
 			eventLimit: true, // allow "more" link when too many events
 			selectable: true,
 			selectHelper: true,
@@ -202,6 +203,21 @@
                    {
                        text: "Ok",
                        click: function() {
+                    	   var checkedValue = $('#allDayCheck:checked').val();
+                    	   if (checkedValue) {
+                    		   checkedValue = true;
+                    		   startDate = $('#startDateInput').val();
+                    		   endDate = $('#endDateInput').val();
+                   		   } else {
+                   			   checkedValue = false;
+                   			   startDate = $('#startDateTimeInput').val();
+                   			   endDate = $('#endDateTimeInput').val();
+                   		   }
+                    	   
+                    	   var title = document.getElementById("titleText").value;
+                    	   var description = document.getElementById("descriptionText").value;
+                    	   updateEvent(event.id, title, startDate, endDate, checkedValue, description);
+               	           $('#calendar').fullCalendar('unselect');
                            $( this ).dialog( "close" );
                        }
                    },
@@ -249,6 +265,36 @@
 		if (title) {
 			$.ajax({
 				url: '/Young_Mens_Calendar/web/calendar',
+				data: dataString,
+				type: 'POST',
+				contentType: "application/json",
+				dataType: 'text',
+				success: function(response){
+				    $('#calendar').fullCalendar('refetchEvents');
+				},
+				error: function(response) {
+					alert('Failed to post ' + dataString + '\n' + response.responseText);
+				}
+			});
+	    }
+	}
+	
+	function updateEvent (id, title, startDate, endDate, allDay, description) {
+		var endString = '';
+		if (endDate) {
+			endString = '"end": "' + endDate + '", ';
+		}
+		var dataString = '{ "id": ' + id + ', "title": "' + title + '", ' 
+	    + '"start": "' + startDate + '", '
+	    + endString
+	    + '"allDay": "' + allDay + '", '
+	    //+ '"location": "' + "Some location" + '", '
+	    + '"description": "' + description + '", '
+	    + '"editable": false }';
+		//alert("In post event: " + dataString);
+		if (title) {
+			$.ajax({
+				url: '/Young_Mens_Calendar/web/calendar/update',
 				data: dataString,
 				type: 'POST',
 				contentType: "application/json",
